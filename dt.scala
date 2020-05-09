@@ -37,6 +37,35 @@ case class DecisionTreeBuilder[A,B](dataSet: LabeledData[A,B])(combiner: LabelCo
         val rootId = Id(0,0)
         buildStep(dataSet, rootId, testBuilder)
     }
+
+    private def buildStep(
+        subSet: LabeledData[A,B],
+        id: Id,
+        testBuilder: (LabeledData[A,B], Id) => Either[String, A => Boolean]): DecisionTree[A,B] = {
+
+        testBuilder(subSet, id) match {
+            // if matches string, predict the parent leaf node
+            case Left(_) => Leaf[A,B](subSet.combineLabels(combiner))
+            case Right(test) =>
+                val Seq(leftSubset, rightSubset) = nextSubsets(subSet, test)
+                // check that during the split if left or right is empty, predict on the parent leaf node
+                if (leftSubset.isEmpty || rightSubset.isEmpty) {
+                    println("Warning: left or right node is empty.")
+                    Leaf[A,B](subSet.combineLabels(combiner))
+                }
+                // since buildStep returns a DecisionTree
+                else Node(test,
+                    buildStep(leftSubset, id.nextIdLeft, testBuilder),
+                    buildStep(rightSubset, id.nextIdRight, testBuilder)
+                )
+        }
+    }
+
+    private def nextSubsets(subSet: LabeledData[A,B], test: A => Boolean): Seq(LabeledData[A,B]) = {
+        // adding default value so that the hashmap in the end will have "some" value and does not throw an error
+        val groups = subSet.groupBy(test) withDefaultValue subSet.emptySet
+        Seq(groups(false), groups(true))
+    }
 }
 
 
@@ -94,7 +123,7 @@ class LabeledData[A,B](
         indices map {idx => f(referenceSamples(idx))}
     }
 
-    def combineLabels(labelCombiner: LabelCombiner[B]): B => {
+    def combineLabels(labelCombiner: LabelCombiner[B]): B = {
         labelCombiner.combine(indices map referenceLabels)
     }
 } 
