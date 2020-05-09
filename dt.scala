@@ -31,6 +31,15 @@ case class Id(number: Int, depth: Int) {
 }
 
 
+case class DecisionTreeBuilder[A,B](dataSet: LabeledData[A,B])(combiner: LabelCombiner[B]) {
+    //testBuilder is the function that determines a split
+    def build(testBuilder: (LabeledData[A,B], Id) => Either[String, A => Boolean]): DecisionTree[A,B] = {
+        val rootId = Id(0,0)
+        buildStep(dataSet, rootId, testBuilder)
+    }
+}
+
+
 class LabeledData[A,B](
         val referenceSamples: Vector[A],
         val referencesLabels: Vector[B],
@@ -88,10 +97,7 @@ class LabeledData[A,B](
     def combineLabels(labelCombiner: LabelCombiner[B]): B => {
         labelCombiner.combine(indices map referenceLabels)
     }
-}
-
-
-
+} 
 
 
 object LabeledData {
