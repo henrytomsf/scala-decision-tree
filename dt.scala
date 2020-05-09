@@ -16,6 +16,11 @@ case class Node[A,B](splitTest: A => Boolean, left: DecisionTree[A,B], right: De
 }
 
 
+case class LabelCombiner[B](combine: Vector[B] => B) {
+    def combine(left: B, right: B): B = combine(Vector(left, right))
+}
+
+
 class LabeledData[A,B](
         val referenceSamples: Vector[A],
         val referencesLabels: Vector[B],
@@ -68,6 +73,10 @@ class LabeledData[A,B](
         // mapping the indices (Ints) to function output
         // ex. will map to boolean if function f returns a boolean
         indices map {idx => f(referenceSamples(idx))}
+    }
+
+    def combineLabels(labelCombiner: LabelCombiner[B]): B => {
+        labelCombiner.combine(indices map referenceLabels)
     }
 }
 
