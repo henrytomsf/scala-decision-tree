@@ -17,6 +17,7 @@ case class Node[A,B](splitTest: A => Boolean, left: DecisionTree[A,B], right: De
 
 
 case class LabelCombiner[B](combine: Vector[B] => B) {
+    // using type B since B represents the label types
     def combine(left: B, right: B): B = combine(Vector(left, right))
 }
 
@@ -88,6 +89,9 @@ class LabeledData[A,B](
         labelCombiner.combine(indices map referenceLabels)
     }
 }
+
+
+
 
 
 object LabeledData {
