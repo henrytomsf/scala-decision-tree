@@ -21,6 +21,15 @@ case class LabelCombiner[B](combine: Vector[B] => B) {
 }
 
 
+case class Id(number: Int, depth: Int) {
+    require(number >= 0, "Number should be nonnegative to use as an ID.")
+
+    def nextIdLeft: Id = Id(number*2+1, depth+1)
+
+    def nextIdRight: Id = Id(number*2+2, depth+1)
+}
+
+
 class LabeledData[A,B](
         val referenceSamples: Vector[A],
         val referencesLabels: Vector[B],
