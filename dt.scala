@@ -19,6 +19,7 @@ case class Node[A,B](splitTest: A => Boolean, left: DecisionTree[A,B], right: De
 
 case class LabelCombiner[B](combine: Vector[B] => B) {
     // using type B since B represents the label types
+    // wrote own function as the original one was incorrect
     def combineWrapper(setLabels: Vector[B]): B = combine(setLabels)
 }
 
