@@ -1,4 +1,5 @@
-trait DecisionTree[-A,+B] {
+// removing variances in types to make [Int, Double] work
+trait DecisionTree[A,B] {
     def predict(sample: A): B
 }
 
@@ -18,7 +19,7 @@ case class Node[A,B](splitTest: A => Boolean, left: DecisionTree[A,B], right: De
 
 case class LabelCombiner[B](combine: Vector[B] => B) {
     // using type B since B represents the label types
-    def combine(left: B, right: B): B = combine(Vector(left, right))
+    def combineWrapper(setLabels: Vector[B]): B = combine(setLabels)
 }
 
 
@@ -61,7 +62,7 @@ case class DecisionTreeBuilder[A,B](dataSet: LabeledData[A,B])(combiner: LabelCo
         }
     }
 
-    private def nextSubsets(subSet: LabeledData[A,B], test: A => Boolean): Seq(LabeledData[A,B]) = {
+    private def nextSubsets(subSet: LabeledData[A,B], test: A => Boolean): Seq[LabeledData[A,B]] = {
         // adding default value so that the hashmap in the end will have "some" value and does not throw an error
         val groups = subSet.groupBy(test) withDefaultValue subSet.emptySet
         Seq(groups(false), groups(true))
@@ -113,7 +114,7 @@ class LabeledData[A,B](
     }
 
     def countDistinctLabels: Int = {
-        // slices referenceLabels and then distincts them and takes its length
+        // slices referencesLabels and then distincts them and takes its length
         (indices map referencesLabels).distinct.length
     }
 
@@ -124,7 +125,7 @@ class LabeledData[A,B](
     }
 
     def combineLabels(labelCombiner: LabelCombiner[B]): B = {
-        labelCombiner.combine(indices map referenceLabels)
+        labelCombiner.combineWrapper(indices map referencesLabels)
     }
 } 
 
