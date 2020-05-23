@@ -1,3 +1,7 @@
+package ml.dt
+
+
+
 // removing variances in types to make [Int, Double] work
 trait DecisionTree[A,B] {
     def predict(sample: A): B
